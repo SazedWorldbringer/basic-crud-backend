@@ -1,7 +1,10 @@
 const express = require('express')
-const app = express()
 const morgan = require('morgan')
+const cors = require('cors')
 
+const app = express()
+
+app.use(cors())
 app.use(express.json())
 
 // log request information to the console
@@ -50,7 +53,7 @@ const generateId = () => {
 	const maxId = products.length > 0
 		? Math.max(...products.map(p => p.id))
 		: 0
-	return String(maxId + 1)
+	return maxId + 1
 }
 
 app.post('/api/products', (req, res) => {
@@ -63,12 +66,26 @@ app.post('/api/products', (req, res) => {
 	}
 
 	const product = {
+		id: generateId(),
 		name: body.name,
 		price: body.price,
-		id: generateId()
 	}
 
 	products = products.concat(product)
+
+	res.json(product)
+})
+
+app.put('/api/products/:id', (req, res) => {
+	const id = req.params.id
+	const body = req.body
+
+	const product = {
+		name: body.name,
+		price: body.price
+	}
+
+	products = products.map(p => p.id !== parseInt(id) ? p : { ...p, name: product.name, price: product.price })
 
 	res.json(product)
 })
